@@ -1,1 +1,36 @@
+name: Scrape Annonces Immobilières Angers
+
+on:
+  schedule:
+    # S'exécute tous les jours à 6h00 UTC (8h00 heure française en été / 7h00 en hiver)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Permet de lancer le script manuellement depuis GitHub pour tester
+
+jobs:
+  scrape_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Run Scraper
+        run: python scraper.py
+
+      - name: Commit and push updated json
+        run: |
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "actions@github.com"
+          git add annonces.json
+          git commit -m "Mise à jour automatique des annonces [skip ci]" || exit 0
+          git push
 
