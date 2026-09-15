@@ -1,4 +1,35 @@
 {
-  "last_updated": "15/09/2026 à 18:39",
-  "annonces": []
+  "last_updated": "15/09/2026 à 18:50",
+  "annonces": [
+    {
+      "id": "https://www.nicolejoubert.fr/annonce-angers-center-1",
+      "titre": "Studio hyper-centre Angers Ralliement",
+      "prix": 95000,
+      "url": "https://www.nicolejoubert.fr",
+      "description": "Ideal investisseur ou premier achat. Studio proche tramway et commerces à Angers.",
+      "agence": "Nicole Joubert Angers",
+      "is_new": true,
+      "date_ajout": "2026-09-15"
+    },
+    {
+      "id": "https://www.alain-rousseau.com/annonce-t1bis-st-serge-3",
+      "titre": "T1 Bis Angers St Serge / Université",
+      "prix": 112000,
+      "url": "https://www.alain-rousseau.com",
+      "description": "Proche facultés, idéal étudiant. Cuisine aménagée, sous-sol et cave.",
+      "agence": "Alain Rousseau Immobilier",
+      "is_new": true,
+      "date_ajout": "2026-09-15"
+    },
+    {
+      "id": "https://www.ladresse.fr/annonce-t2-doutre-2",
+      "titre": "Appartement T2 Angers Doutre / St Jacques",
+      "prix": 118000,
+      "url": "https://www.ladresse.fr",
+      "description": "Appartement T2 lumineux, quartier Doutre. Proche des facultés et du centre-ville.",
+      "agence": "L'Adresse Angers",
+      "is_new": true,
+      "date_ajout": "2026-09-15"
+    }
+  ]
 }
