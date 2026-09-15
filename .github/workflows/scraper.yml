@@ -2,9 +2,8 @@ name: Scrape Annonces Immobilières Angers
 
 on:
   schedule:
-    # S'exécute tous les jours à 6h00 UTC (8h00 heure française en été / 7h00 en hiver)
-    - cron: '0 6 * * *'
-  workflow_dispatch: # Permet de lancer le script manuellement depuis GitHub pour tester
+    - cron: '0 6 * * *' # Tous les jours à 8h (heure française)
+  workflow_dispatch:
 
 jobs:
   scrape_job:
@@ -21,9 +20,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
+          pip install playwright beautifulsoup4
+          playwright install chromium
 
-      - name: Run Scraper
+      - name: Run Scraper with Playwright
         run: python scraper.py
 
       - name: Commit and push updated json
@@ -33,4 +33,3 @@ jobs:
           git add annonces.json
           git commit -m "Mise à jour automatique des annonces [skip ci]" || exit 0
           git push
-
