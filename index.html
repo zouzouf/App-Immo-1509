@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immo Angers - Recherche Appartement</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+        }
+
+        header {
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        /* Style pour les nouvelles annonces */
+        .card.is-new {
+            border-color: #22c55e;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+        }
+
+        .badge-new {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: #22c55e;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Style pour les annonces "moyennement intéressantes" (grisées) */
+        .card.is-muted {
+            opacity: 0.45;
+            background-color: #f1f5f9;
+            filter: grayscale(80%);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding-right: 70px; /* Espace pour le badge Nouveau */
+        }
+
+        .price {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .description {
+            color: #475569;
+            font-size: 0.95rem;
+            margin: 10px 0;
+            line-height: 1.4;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-link {
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-link:hover {
+            opacity: 0.9;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #64748b;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Achat Appartement Angers</h1>
+        <p class="subtitle">Budget &lt; 125 000 € • Mis à jour : <span id="update-date">...</span></p>
+    </header>
+
+    <div class="container" id="annonces-list">
+        <!-- Les annonces seront injectées ici -->
+    </div>
+
+    <script>
+        // Enregistrement du Service Worker PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        // Chargement de l'état des cases cochées (stocké localement dans le navigateur)
+        const mutedIds = new Set(JSON.parse(localStorage.getItem('muted_annonces') || '[]'));
+
+        function toggleMute(id, cardElem) {
+            if (mutedIds.has(id)) {
+                mutedIds.delete(id);
+                cardElem.classList.remove('is-muted');
+            } else {
+                mutedIds.add(id);
+                cardElem.classList.add('is-muted');
+            }
+            localStorage.setItem('muted_annonces', JSON.stringify([...mutedIds]));
+        }
+
+        async function loadAnnonces() {
+            try {
+                // Charger le fichier JSON généré par GitHub Actions
+                const response = await fetch('annonces.json?t=' + Date.now());
+                const data = await response.json();
+
+                document.getElementById('update-date').textContent = data.last_updated || 'Aujourd\'hui';
+
+                const container = document.getElementById('annonces-list');
+                container.innerHTML = '';
+
+                if (!data.annonces || data.annonces.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;">Aucune annonce trouvée pour le moment.</p>';
+                    return;
+                }
+
+                data.annonces.forEach(annonce => {
+                    const isMuted = mutedIds.has(annonce.id);
+                    
+                    const card = document.createElement('div');
+                    card.className = `card ${annonce.is_new ? 'is-new' : ''} ${isMuted ? 'is-muted' : ''}`;
+
+                    card.innerHTML = `
+                        ${annonce.is_new ? '<span class="badge-new">Nouveau</span>' : ''}
+                        <div class="card-header">
+                            <div>
+                                <h2 style="font-size: 1.1rem; margin:0 0 4px 0;">${annonce.titre}</h2>
+                                <span style="font-size: 0.8rem; color: #64748b;">${annonce.agence}</span>
+                            </div>
+                            <div class="price">${annonce.prix.toLocaleString('fr-FR')} €</div>
+                        </div>
+                        <p class="description">${annonce.description}</p>
+                        <div class="card-footer">
+                            <label class="checkbox-container">
+                                <input type="checkbox" ${isMuted ? 'checked' : ''} onchange="toggleMute('${annonce.id}', this.closest('.card'))">
+                                Intérêt secondaire
+                            </label>
+                            <a href="${annonce.url}" target="_blank" class="btn-link">Voir l'annonce ↗</a>
+                        </div>
+                    `;
+
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Erreur de chargement des annonces :", err);
+            }
+        }
+
+        loadAnnonces();
+    </script>
+</body>
+</html>
