@@ -1,227 +1,295 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Immo Angers - Recherche Appartement</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
-    <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veille Immo Angers</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <style>
+    :root {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --badge-new: #16a34a;
+      --badge-agence: #e2e8f0;
+      --border-color: #e2e8f0;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 16px;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-        header {
-            max-width: 800px;
-            margin: 0 auto 20px auto;
-            text-align: center;
-        }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
 
-        h1 {
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
+    header {
+      background-color: var(--card-bg);
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
 
-        .subtitle {
-            color: #64748b;
-            font-size: 0.9em;
-        }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            display: grid;
-            gap: 16px;
-        }
+    .last-update {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
-            position: relative;
-            border: 2px solid transparent;
-        }
+    #annonces-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-        /* Style pour les nouvelles annonces */
-        .card.is-new {
-            border-color: #22c55e;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
-        }
+    .annonce-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+    }
 
-        .badge-new {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background-color: #22c55e;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
+    /* Style quand l'annonce est cochée comme Vue */
+    .annonce-card.visited {
+      opacity: 0.55;
+      background-color: #f8fafc;
+      filter: grayscale(40%);
+    }
 
-        /* Style pour les annonces "moyennement intéressantes" (grisées) */
-        .card.is-muted {
-            opacity: 0.45;
-            background-color: #f1f5f9;
-            filter: grayscale(80%);
-        }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-            padding-right: 70px; /* Espace pour le badge Nouveau */
-        }
+    .badge-agence {
+      background-color: var(--badge-agence);
+      color: #334155;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-        .price {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
+    .badge-new {
+      background-color: var(--badge-new);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
 
-        .description {
-            color: #475569;
-            font-size: 0.95rem;
-            margin: 10px 0;
-            line-height: 1.4;
-        }
+    .annonce-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
 
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #e2e8f0;
-        }
+    .annonce-price {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
 
-        .btn-link {
-            background-color: var(--primary);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
+    .annonce-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
 
-        .btn-link:hover {
-            opacity: 0.9;
-        }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+    }
 
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            color: #64748b;
-            cursor: pointer;
-            user-select: none;
-        }
+    .btn-voir {
+      background-color: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.2s;
+    }
 
-        .checkbox-container input {
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-        }
-    </style>
+    .btn-voir:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .check-visited {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .check-visited input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>Achat Appartement Angers</h1>
-        <p class="subtitle">Budget &lt; 125 000 € • Mis à jour : <span id="update-date">...</span></p>
-    </header>
+  <header>
+    <h1> Veille Immo Angers</h1>
+    <div class="last-update" id="update-date">Mise à jour : --</div>
+  </header>
 
-    <div class="container" id="annonces-list">
-        <!-- Les annonces seront injectées ici -->
-    </div>
+  <main id="annonces-container">
+    <p class="no-data">Chargement des annonces en cours...</p>
+  </main>
 
-    <script>
-        // Enregistrement du Service Worker PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+  <script>
+    const STORAGE_KEY = "visited_annonces_v1";
 
-        // Chargement de l'état des cases cochées (stocké localement dans le navigateur)
-        const mutedIds = new Set(JSON.parse(localStorage.getItem('muted_annonces') || '[]'));
+    // Récupérer l'historique des annonces vues dans le navigateur
+    function getVisitedIds() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
 
-        function toggleMute(id, cardElem) {
-            if (mutedIds.has(id)) {
-                mutedIds.delete(id);
-                cardElem.classList.remove('is-muted');
-            } else {
-                mutedIds.add(id);
-                cardElem.classList.add('is-muted');
-            }
-            localStorage.setItem('muted_annonces', JSON.stringify([...mutedIds]));
-        }
+    // Basculer le statut vu/non-vu
+    function toggleVisited(id) {
+      let visited = getVisitedIds();
+      if (visited.includes(id)) {
+        visited = visited.filter(item => item !== id);
+      } else {
+        visited.push(id);
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(visited));
+      
+      const card = document.getElementById(`card-${btoa(id).replace(/=/g, '')}`);
+      if (card) {
+        card.classList.toggle('visited');
+      }
+    }
 
-        async function loadAnnonces() {
-            try {
-                // Charger le fichier JSON généré par GitHub Actions
-                const response = await fetch('annonces.json?t=' + Date.now());
-                const data = await response.json();
+    // Marquer automatique comme vu lors du clic sur le lien
+    function markAsVisited(id) {
+      let visited = getVisitedIds();
+      if (!visited.includes(id)) {
+        visited.push(id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(visited));
+      }
+    }
 
-                document.getElementById('update-date').textContent = data.last_updated || 'Aujourd\'hui';
+    // Affichage des annonces
+    function renderAnnonces(data) {
+      const container = document.getElementById("annonces-container");
+      const updateEl = document.getElementById("update-date");
+      
+      if (data.last_updated) {
+        updateEl.textContent = `Mis à jour le ${data.last_updated}`;
+      }
 
-                const container = document.getElementById('annonces-list');
-                container.innerHTML = '';
+      const annonces = data.annonces || [];
+      if (annonces.length === 0) {
+        container.innerHTML = "<p class='no-data'>Aucune annonce disponible pour le moment.</p>";
+        return;
+      }
 
-                if (!data.annonces || data.annonces.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;">Aucune annonce trouvée pour le moment.</p>';
-                    return;
-                }
+      const visitedIds = getVisitedIds();
+      container.innerHTML = "";
 
-                data.annonces.forEach(annonce => {
-                    const isMuted = mutedIds.has(annonce.id);
-                    
-                    const card = document.createElement('div');
-                    card.className = `card ${annonce.is_new ? 'is-new' : ''} ${isMuted ? 'is-muted' : ''}`;
+      annonces.forEach(item => {
+        const isVisited = visitedIds.includes(item.id);
+        const safeId = btoa(item.id).replace(/=/g, '');
+        
+        const card = document.createElement("article");
+        card.className = `annonce-card ${isVisited ? 'visited' : ''}`;
+        card.id = `card-${safeId}`;
 
-                    card.innerHTML = `
-                        ${annonce.is_new ? '<span class="badge-new">Nouveau</span>' : ''}
-                        <div class="card-header">
-                            <div>
-                                <h2 style="font-size: 1.1rem; margin:0 0 4px 0;">${annonce.titre}</h2>
-                                <span style="font-size: 0.8rem; color: #64748b;">${annonce.agence}</span>
-                            </div>
-                            <div class="price">${annonce.prix.toLocaleString('fr-FR')} €</div>
-                        </div>
-                        <p class="description">${annonce.description}</p>
-                        <div class="card-footer">
-                            <label class="checkbox-container">
-                                <input type="checkbox" ${isMuted ? 'checked' : ''} onchange="toggleMute('${annonce.id}', this.closest('.card'))">
-                                Intérêt secondaire
-                            </label>
-                            <a href="${annonce.url}" target="_blank" class="btn-link">Voir l'annonce ↗</a>
-                        </div>
-                    `;
+        card.innerHTML = `
+          <div class="card-header">
+            <span class="badge-agence">${item.agence || 'Agence'}</span>
+            ${item.is_new ? '<span class="badge-new">Nouveau</span>' : ''}
+          </div>
+          
+          <h2 class="annonce-title">${item.titre}</h2>
+          <div class="annonce-price">${item.prix.toLocaleString('fr-FR')} €</div>
+          <p class="annonce-desc">${item.description || ''}</p>
+          
+          <div class="card-footer">
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn-voir" onclick="markAsVisited('${item.id}')">
+              Voir l'annonce ➔
+            </a>
+            <label class="check-visited">
+              <input type="checkbox" ${isVisited ? 'checked' : ''} onchange="toggleVisited('${item.id}')">
+              Vu
+            </label>
+          </div>
+        `;
 
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                console.error("Erreur de chargement des annonces :", err);
-            }
-        }
+        container.appendChild(card);
+      });
+    }
 
-        loadAnnonces();
-    </script>
+    // Chargement du fichier JSON d'annonces
+    fetch('annonces.json?v=' + new Date().getTime())
+      .then(response => {
+        if (!response.ok) throw new Error("Erreur de chargement JSON");
+        return response.json();
+      })
+      .then(data => renderAnnonces(data))
+      .catch(err => {
+        console.error(err);
+        document.getElementById("annonces-container").innerHTML = 
+          "<p class='no-data'>Impossible de charger les annonces. Vérifiez l'exécution de l'Action GitHub.</p>";
+      });
+  </script>
 </body>
 </html>
