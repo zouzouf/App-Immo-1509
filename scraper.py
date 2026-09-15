@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 
 DATA_FILE = "annonces.json"
 
-# Charger l'historique
+# Historique des annonces
 existing_annonces = {}
 if os.path.exists(DATA_FILE):
     try:
@@ -14,22 +14,22 @@ if os.path.exists(DATA_FILE):
             data = json.load(f)
             existing_annonces = {item["id"]: item for item in data.get("annonces", [])}
     except Exception as e:
-        print(f"Erreur lecture {DATA_FILE}: {e}")
+        print(f"Erreur de lecture de {DATA_FILE}: {e}")
 
 def clean_price(text):
     if not text:
         return None
+    # Extraction des chiffres uniquement
     digits = re.sub(r"[^\d]", "", text)
     return int(digits) if digits else None
 
 results = []
 
-print("Démarrage du robot Playwright...")
+print("Lancement du scraper...")
 
 with sync_playwright() as p:
+    # Utilisation d'un navigateur avec configuration réaliste
     browser = p.chromium.launch(headless=True)
-    
-    # ignore_https_errors=True résout le problème ERR_CERT_DATE_INVALID
     context = browser.new_context(
         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         locale="fr-FR",
@@ -37,88 +37,72 @@ with sync_playwright() as p:
     )
     page = context.new_page()
 
-    # Cibles testées et nettoyées
-    targets = [
+    # Liste des sources à scruter à Angers (Budget max ~125 000 €)
+    sources = [
         {
             "nom": "Ouest-France Immo",
             "url": "https://www.ouestfrance-immo.com/achetez/appartement/angers-49-49007/?prix_max=125000",
             "domain": "https://www.ouestfrance-immo.com"
         },
         {
-            "nom": "Avis Immobilier / Nestenn Angers",
+            "nom": "Nestenn Angers",
             "url": "https://immobilier-angers.nestenn.com/achat-appartement-angers?prix_max=125000",
             "domain": "https://immobilier-angers.nestenn.com"
+        },
+        {
+            "nom": "Nicole Joubert",
+            "url": "https://www.nicolejoubert.fr/ventes",
+            "domain": "https://www.nicolejoubert.fr"
         }
     ]
 
-    for target in targets:
-        print(f"Scraping : {target['nom']}...")
+    for source in sources:
+        print(f"Extraction en cours : {source['nom']}...")
         try:
-            # domcontentloaded évite le blocage sur networkidle
-            page.goto(target["url"], timeout=20000, wait_until="domcontentloaded")
+            page.goto(source["url"], timeout=30000, wait_until="domcontentloaded")
             page.wait_for_timeout(3000)
 
-            cards = page.query_selector_all("article, li.annCard, div.card, div.annonce-item")
-            print(f"Cartes trouvées sur {target['nom']}: {len(cards)}")
+            # Recherche globale des balises contenant des liens d'annonces
+            # Recherche de tous les liens hypertextes dans la page qui pointent vers des annonces
+            links = page.query_selector_all("a[href]")
+            
+            for link in links:
+                try:
+                    href = link.get_attribute("href")
+                    text = link.inner_text()
+                    
+                    if not href or not text:
+                        continue
 
-            for card in cards:
-                text = card.inner_text()
-                if "€" in text:
-                    prix = clean_price(text)
-                    if prix and 20000 <= prix <= 125000:
-                        link_el = card.query_selector("a[href]")
-                        if link_el:
-                            href = link_el.get_attribute("href")
-                            full_url = href if href.startswith("http") else target["domain"] + href
-                            
+                    # Nettoyage et construction de l'URL absolue
+                    full_url = href if href.startswith("http") else source["domain"] + href
+                    
+                    # Vérification si le bloc contient un prix (€) et concerne Angers/Appartement
+                    if "€" in text and ("angers" in text.lower() or "appartement" in text.lower() or "studio" in text.lower() or "t1" in text.lower() or "t2" in text.lower()):
+                        price = clean_price(text)
+                        
+                        # Filtrage sur la tranche de prix souhaitée (ex: entre 30 000 € et 130 000 €)
+                        if price and 30000 <= price <= 130000:
                             lines = [l.strip() for l in text.split("\n") if l.strip()]
-                            titre = lines[0] if lines else f"Appartement Angers ({target['nom']})"
+                            titre = lines[0] if lines else f"Appartement à Angers ({price:,} €)"
                             
                             results.append({
                                 "id": full_url,
-                                "titre": titre[:80],
-                                "prix": prix,
+                                "titre": titre[:90],
+                                "prix": price,
                                 "url": full_url,
-                                "description": text.replace("\n", " ")[:150] + "...",
-                                "agence": target["nom"]
+                                "description": text.replace("\n", " ")[:160] + "...",
+                                "agence": source["nom"]
                             })
-        except Exception as e:
-            print(f"Avertissement sur {target['nom']}: {e}")
+                except Exception as inner_err:
+                    continue
+
+        except Exception as err:
+            print(f"Erreur sur {source['nom']}: {err}")
 
     browser.close()
 
-# Si le scraping direct est filtré par le pare-feu du serveur Cloud, 
-# injection des annonces réelles relevées à Angers pour alimenter la PWA
-if not results:
-    print("Génération de la veille Angers (fallback).")
-    results = [
-        {
-            "id": "https://www.nicolejoubert.fr/annonce-angers-center-1",
-            "titre": "Studio hyper-centre Angers Ralliement",
-            "prix": 95000,
-            "url": "https://www.nicolejoubert.fr",
-            "description": "Ideal investisseur ou premier achat. Studio proche tramway et commerces à Angers.",
-            "agence": "Nicole Joubert Angers"
-        },
-        {
-            "id": "https://www.ladresse.fr/annonce-t2-doutre-2",
-            "titre": "Appartement T2 Angers Doutre / St Jacques",
-            "prix": 118000,
-            "url": "https://www.ladresse.fr",
-            "description": "Appartement T2 lumineux, quartier Doutre. Proche des facultés et du centre-ville.",
-            "agence": "L'Adresse Angers"
-        },
-        {
-            "id": "https://www.alain-rousseau.com/annonce-t1bis-st-serge-3",
-            "titre": "T1 Bis Angers St Serge / Université",
-            "prix": 112000,
-            "url": "https://www.alain-rousseau.com",
-            "description": "Proche facultés, idéal étudiant. Cuisine aménagée, sous-sol et cave.",
-            "agence": "Alain Rousseau Immobilier"
-        }
-    ]
-
-# Déduplication
+# Traitement et déduplication des annonces
 final_list = []
 seen_ids = set()
 
@@ -137,14 +121,14 @@ for item in results:
 
     final_list.append(item)
 
-# Tri par prix
+# Tri par prix croissant
 final_list.sort(key=lambda x: x["prix"])
 
-# Écriture du fichier JSON
+# Sauvegarde dans annonces.json
 with open(DATA_FILE, "w", encoding="utf-8") as f:
     json.dump({
         "last_updated": datetime.now().strftime("%d/%m/%Y à %H:%M"),
         "annonces": final_list
     }, f, ensure_ascii=False, indent=2)
 
-print(f"Succès ! {len(final_list)} annonces enregistrées dans {DATA_FILE}.")
+print(f"Extraction terminée avec succès : {len(final_list)} vraies annonces trouvées.")
