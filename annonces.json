@@ -1,38 +1,4 @@
 {
-  "last_updated": "15/09/2026 à 19:17",
-  "annonces": [
-    {
-      "id": "https://www.nicolejoubert.fr/ventes",
-      "titre": "Biens à vendre Nicole Joubert Angers",
-      "prix": 98000,
-      "url": "https://www.nicolejoubert.fr/ventes",
-      "description": "Lien direct vers le catalogue de l'agence locale Nicole Joubert Angers.",
-      "agence": "Nicole Joubert",
-      "is_fictive": true,
-      "is_new": true,
-      "date_ajout": "2026-09-15"
-    },
-    {
-      "id": "https://www.ladresse.com/achat/appartement/angers-49000",
-      "titre": "Annonces Appartements L'Adresse Angers",
-      "prix": 115000,
-      "url": "https://www.ladresse.com/achat/appartement/angers-49000",
-      "description": "Lien direct vers la liste mise à jour des appartements à vendre à Angers sur L'Adresse.",
-      "agence": "L'Adresse Immobilier",
-      "is_fictive": true,
-      "is_new": true,
-      "date_ajout": "2026-09-15"
-    },
-    {
-      "id": "https://www.ouestfrance-immo.com/achetez/appartement/angers-49-49007/",
-      "titre": "Annonces Ouest-France Immo Angers",
-      "prix": 120000,
-      "url": "https://www.ouestfrance-immo.com/achetez/appartement/angers-49-49007/",
-      "description": "Portail régional de référence pour les offres sur Angers et l'Anjou.",
-      "agence": "Ouest-France Immo",
-      "is_fictive": true,
-      "is_new": true,
-      "date_ajout": "2026-09-15"
-    }
-  ]
+  "last_updated": "16/09/2026 à 06:16",
+  "annonces": []
 }
